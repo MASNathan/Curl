@@ -1,0 +1,21 @@
+{
+    "name": "masnathan/curl",
+    "type": "library",
+    "description": "Another CURL Object.",
+    "keywords": ["curl"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "André Filipe",
+            "email": "andre.r.flip@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4"
+    },
+    "autoload": {
+        "psr-0": {
+            "MASNathan\\Curl\\": "src/"
+        }
+    }
+}
