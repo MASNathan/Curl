@@ -3,11 +3,13 @@
 namespace MASNathan\Curl;
 
 /**
- * String parser
- *
- * It parses either a json or a xml string into an array
- * @author    André Filipe <andre.r.flip@gmail.com>
- * @version   0.0.1
+ * String parser - It parses either a json or a xml string into an array
+ * 
+ * @package MASNathan
+ * @subpackage Curl
+ * @author André Filipe <andre.r.flip@gmail.com>
+ * @link https://github.com/ReiDuKuduro/Curl GitHub repo
+ * @version 0.0.1
  */
 class StringParser
 {

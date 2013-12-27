@@ -3,11 +3,13 @@
 namespace MASNathan\Curl;
 
 /**
- * Another Curl Object
- *
- * I can do stuff
- * @author    André Filipe <andre@easypay.pt>
- * @version   1.0.0
+ * Curl - Another Curl Object
+ * 
+ * @package MASNathan
+ * @subpackage Curl
+ * @author André Filipe <andre.r.flip@gmail.com>
+ * @link https://github.com/ReiDuKuduro/Curl GitHub repo
+ * @version 0.0.1
  */
 class Ch
 {
