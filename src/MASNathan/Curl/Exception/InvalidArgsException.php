@@ -12,7 +12,7 @@ namespace MASNathan\Curl\Exception;
  * @license	MIT
  * @version	0.0.1
  */
-class InvalidArgsException extends Exception
+class InvalidArgsException extends \Exception
 {
 	public function __construct($message = '', $code = 0, $previous = null) {
 
