@@ -9,6 +9,7 @@ namespace MASNathan\Curl;
  * @subpackage Curl
  * @author André Filipe <andre.r.flip@gmail.com>
  * @link https://github.com/ReiDuKuduro/Curl GitHub repo
+ * @license MIT
  * @version 0.0.1
  */
 class Curl

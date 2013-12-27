@@ -9,6 +9,7 @@ namespace MASNathan\Curl;
  * @subpackage Curl
  * @author André Filipe <andre.r.flip@gmail.com>
  * @link https://github.com/ReiDuKuduro/Curl GitHub repo
+ * @license MIT
  * @version 0.0.1
  */
 class Ch
@@ -179,7 +180,7 @@ class Ch
     public static function call($method, $args, $content_type = null)
     {
         if (count($args) == 0) {
-            throw new InvalidArgsException("You need specify at least the URL to call");
+            throw new Exception\InvalidArgsException("You need specify at least the URL to call");
         }
 
         $method    = strtoupper($method);
@@ -189,7 +190,7 @@ class Ch
         $data_type = '';
         
         if (!is_string($args[0]) || !filter_var($args[0], FILTER_VALIDATE_URL)) {
-            throw new InvalidArgsException("The URL you specified is not valid.");
+            throw new Exception\InvalidArgsException("The URL you specified is not valid.");
         } else {
             $url = \array_shift($args);
         }
