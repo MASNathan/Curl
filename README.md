@@ -51,10 +51,30 @@ $curl->close();
 //or you can login onto a website
 $curl->init();
 $login_page   = $curl->login('http://somedomain.com/login', array('username' => 'my_user', 'password' => 'my_fancy_password'), '/path/to/my/cookie.txt');
-$private_page = $curl->get('https://somedomain.com/private_page');
+$private_page = $curl->get('http://somedomain.com/private_page');
 ```
 
+##The "not so basic until you know it" way
+```php
+//These are the fast-forward methods
+Ch::get( string $url [, array $params [, function $callback [, string $data_type]]]);
+Ch::post( string $url [, array $params [, function $callback [, string $data_type]]]);
+Ch::postJson( string $url [, array $params [, function $callback [, string $data_type]]]);
+Ch::postXml( string $url [, array $params [, function $callback [, string $data_type]]]);
+Ch::put( string $url [, array $params [, function $callback [, string $data_type]]]);
+Ch::delete( string $url [, array $params [, function $callback [, string $data_type]]]);
 
+//Here are a few examples:
+Ch::get('http://somedomain.com');
+Ch::get('http://somedomain.com', array('param1' => 'some value', 'param2' => 'some other value'));
+Ch::get('http://somedomain.com', array('param1' => 'some value', 'param2' => 'some other value'), function(data) { var_dump($data); });
+Ch::get('http://somedomain.com', array('param1' => 'some value', 'param2' => 'some other value'), function(data) { var_dump($data); }, 'json');
+Ch::get('http://somedomain.com', array('param1' => 'some value', 'param2' => 'some other value'), 'json');
+Ch::get('http://somedomain.com', 'xml');
+Ch::get('http://somedomain.com', function(data) { var_dump($data); }, 'json');
+//Any of the above examples is aceptable
+
+```
 
 # License
 
