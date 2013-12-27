@@ -11,224 +11,169 @@ namespace MASNathan\Curl;
  */
 class Curl
 {
-    static public function getMethod() { return $_SERVER['REQUEST_METHOD']; }
-    static public function getData() { switch (self::getMethod()) { case 'POST': return $_POST; case 'GET': return $_GET; case 'PUT': $tmp = array(); parse_str(file_get_contents("php://input"), $tmp); return $tmp; case 'DELETE': $tmp = array(); parse_str(file_get_contents("php://input"), $tmp); return $tmp; default: return array(); } }
+    
+    private $curl_instance;
 
-    /**
-     * Supported Content types, 'none' isn't actually a content type itself but you get the idea
-     */
-    const CONTENT_TYPE_NONE = 'none';
-    const CONTENT_TYPE_JSON = 'json';
-    const CONTENT_TYPE_XML  = 'xml';
-
-    /**
-     * Communication standards allowed
-     */
-     const METHOD_GET    = 'GET';
-     const METHOD_POST   = 'POST';
-     const METHOD_PUT    = 'PUT';
-     const METHOD_DELETE = 'DELETE';
-
-    /**
-     * Requests a specified url using the method GET
-     * @param string $url
-     * @param array $data
-     * @return string
-     */
-    static public function get($url, $data = array())
+    public function __construct()
     {
-        return self::curl('GET', $url, $data);
     }
 
     /**
-     * Requests a specified url using the method POST
-     * @param string $url
-     * @param array $data
-     * @return string
+     * Initializes a CURL session
+     * @return Curl
      */
-    static public function post($url, $data = array())
+    public function init()
     {
-        return self::curl('POST', $url, $data);
+        $this->curl_instance = \curl_init();
+
+        return $this;
+    }
+
+    public function isInitialized()
+    {
+        return !is_null($this->curl_instance);
     }
 
     /**
-     * Requests a specified url using the method PUT
-     * @param string $url
-     * @param array $data
-     * @return string
+     * Closes the CURL session
+     * @return Curl
      */
-    static public function put($url, $data = array())
+    public function close()
     {
-        return self::curl('PUT', $url, $data);
+        \curl_close($this->curl_instance);
+        $this->curl_instance = null;
+
+        return $this;
     }
 
-    /**
-     * Requests a specified url using the method DELETE
-     * @param string $url
-     * @param array $data
-     * @return string
-     */
-    static public function delete($url, $data = array())
+    public function setOpt($option, $value)
     {
-        return self::curl('DELETE', $url, $data);
+        \curl_setopt($this->curl_instance, $option, $value);
+
+        return $this;
     }
 
-    /**
-     * Requests a specified url using the specified method
-     * @param string $methof
-     * @param string $url
-     * @param array $data
-     * @return string
-     */
-    static private function curl($method, $url, $data, $special_options = null)
+    public function setOpts(array $opts)
     {
-        $curl = \curl_init();
+        \curl_setopt_array($this->curl_instance, $opts);
 
-        if ($method == 'GET') {
-            $url .= '?' . \http_build_query($data);
-        } elseif (!is_null($special_options)) {
-        	\curl_setopt_array($curl, $special_options);
-            \curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
-            \curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-        } else {
-            \curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
-            \curl_setopt($curl, CURLOPT_POSTFIELDS, \http_build_query($data));
+        return $this;
+    }
+
+    public function execute()
+    {
+        return \curl_exec($this->curl_instance);
+    }
+
+    public function get($url, array $params = array())
+    {
+        $standAlone = !$this->isInitialized();
+
+        if ($standAlone) {
+            $this->init();
         }
 
-        \curl_setopt($curl, CURLOPT_URL, $url);
-
-        \curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
-        \curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-        \curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
-        \curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-
-        $content = \curl_exec($curl);
-        \curl_close($curl);
-
-        return $content;
-    }
-
-    /**
-     * Deals with the arguments "detection" and sets the rigth configs for the method you specify
-     * @param array $args
-     * @param string $method You can use the following constants APIcaller::METHOD_GET, APIcaller::METHOD_POST, APIcaller::METHOD_PUT and APIcaller::METHOD_DELETE 
-     * @return string|array Depends on the data type you use
-     */
-    public static function call($method, $args, $content_type = null)
-    {
-        if (count($args) == 0) {
-            throw new InvalidArgsException("You need specify at least the URL to call");
+        if (!empty($params)) {
+            $url .= strpos($url, '?' !== false) ? '&' : '?';
+            $url .= http_build_query($params);
         }
+        $this->setOpt(CURLOPT_URL, $url);
+        $this->setOpt(CURLOPT_SSL_VERIFYHOST, 0);
+        $this->setOpt(CURLOPT_SSL_VERIFYPEER, false);
+        $this->setOpt(CURLOPT_CONNECTTIMEOUT, 10);
+        $this->setOpt(CURLOPT_RETURNTRANSFER, true);
 
-        $url       = null;
-        $params    = null;
-        $callback  = null;
-        $data_type = self::CONTENT_TYPE_NONE;
+        $response = $this->execute();
         
-        if (!is_string($args[0]) || !filter_var($args[0], FILTER_VALIDATE_URL)) {
-            throw new InvalidArgsException("The URL you specified is not valid.");
-        } else {
-            $url = array_shift($args);
+        if ($standAlone) {
+            $this->close();
         }
 
-        //Is there any parameters to add?
-        if (count($args) > 0 && is_array($args[0])) {
-            $params = array_shift($args);
+        return $response;
+    }
+
+    public function post($url, array $params = array())
+    {
+        $standAlone = !$this->isInitialized();
+
+        if ($standAlone) {
+            $this->init();
         }
+
+        $this->setOpt(CURLOPT_URL, $url);
+        $this->setOpt(CURLOPT_CUSTOMREQUEST,  'POST');
+        $this->setOpt(CURLOPT_POSTFIELDS,     \http_build_query($params));
+        $this->setOpt(CURLOPT_SSL_VERIFYHOST, 0);
+        $this->setOpt(CURLOPT_SSL_VERIFYPEER, false);
+        $this->setOpt(CURLOPT_CONNECTTIMEOUT, 10);
+        $this->setOpt(CURLOPT_RETURNTRANSFER, true);
+
+        $response = $this->execute();
         
-        //Is there any callback function to call?
-        if (count($args) > 0 && is_callable($args[0])) {
-            $callback = array_shift($args);
+        if ($standAlone) {
+            $this->close();
         }
+
+        return $response;
+    }
+
+    public function put($url, array $params = array())
+    {
+        $standAlone = !$this->isInitialized();
+
+        if ($standAlone) {
+            $this->init();
+        }
+
+        $this->setOpt(CURLOPT_URL, $url);
+        $this->setOpt(CURLOPT_CUSTOMREQUEST,  'PUT');
+        $this->setOpt(CURLOPT_POSTFIELDS,     \http_build_query($params));
+        $this->setOpt(CURLOPT_SSL_VERIFYHOST, 0);
+        $this->setOpt(CURLOPT_SSL_VERIFYPEER, false);
+        $this->setOpt(CURLOPT_CONNECTTIMEOUT, 10);
+        $this->setOpt(CURLOPT_RETURNTRANSFER, true);
+
+        $response = $this->execute();
         
-        //Is there any data type?
-        if (count($args) > 0 && is_string($args[0])) {
-            $data_type = array_shift($args);
-        }
-        //END of arguments treatment
-
-        if ($method == self::METHOD_POST && $content_type == self::CONTENT_TYPE_JSON) {
-            $data = self::curl($method, $url, $params, array(
-                CURLOPT_HTTPHEADER     => array('Content-Type: application/json'),
-                CURLOPT_POSTFIELDS     => $params,
-            ));
-
-        } else if ($method == self::METHOD_POST && $content_type == self::CONTENT_TYPE_XML) {
-            $data = self::curl($method, $url, $params, array(
-                CURLOPT_HTTPHEADER     => array('Content-Type: text/xml'),
-                CURLOPT_POSTFIELDS     => $params,
-            ));
-
-        } else {
-        	$data = self::curl($method, $url, $params);
+        if ($standAlone) {
+            $this->close();
         }
 
-        $data = self::parseData($data, $data_type);
-
-        if (!is_null($callback)) {
-            $data = $callback($data);
-        }
-
-        return $data;
+        return $response;
     }
 
-    /**
-     * Parses a json string into an array
-     * @param string        $string
-     * @return array
-     */
-    private static function parseJson($str)
+    public function delete($url, array $params = array())
     {
-        $data = json_decode($str, true);
+        $standAlone = !$this->isInitialized();
 
-        switch (json_last_error()) {
-            case JSON_ERROR_NONE:
-            	return $data;
-	        case JSON_ERROR_DEPTH:
-	            return array('error' => 'Maximum stack depth exceeded');
-	        case JSON_ERROR_STATE_MISMATCH:
-	            return array('error' => 'Underflow or the modes mismatch');
-	        case JSON_ERROR_CTRL_CHAR:
-	            return array('error' => 'Unexpected control character found');
-	        case JSON_ERROR_SYNTAX:
-	            return array('error' => 'Syntax error, malformed JSON');
-	        case JSON_ERROR_UTF8:
-	            return array('error' => 'Malformed UTF-8 characters, possibly incorrectly encoded');
-	        default:
-	            return array('error' => 'Unknown error on JSON file');
+        if ($standAlone) {
+            $this->init();
         }
+
+        $this->setOpt(CURLOPT_URL, $url);
+        $this->setOpt(CURLOPT_CUSTOMREQUEST,  'DELETE');
+        $this->setOpt(CURLOPT_POSTFIELDS,     \http_build_query($params));
+        $this->setOpt(CURLOPT_SSL_VERIFYHOST, 0);
+        $this->setOpt(CURLOPT_SSL_VERIFYPEER, false);
+        $this->setOpt(CURLOPT_CONNECTTIMEOUT, 10);
+        $this->setOpt(CURLOPT_RETURNTRANSFER, true);
+
+        $response = $this->execute();
+        
+        if ($standAlone) {
+            $this->close();
+        }
+
+        return $response;
     }
 
-    /**
-     * Parses a xml string into an array
-     * @param string        $string
-     * @return array
-     */
-    private static function parseXml($str)
+    public function login($url, array $params, $cookiefile, $useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36')
     {
-        return self::parseJson(json_encode((array) simplexml_load_string($str), true));
-    }
-
-    /**
-     * Parses the data passed into the requested data type
-     * @param string        $string
-     * @param string        $data_type You can use one of the following constants APIcaller::CONTENT_TYPE_JSON, APIcaller::CONTENT_TYPE_XML, APIcaller::CONTENT_TYPE_NONE
-     * @return array
-     */
-    private static function parseData($str, $data_type)
-    {
-        switch ($data_type) {
-            case self::CONTENT_TYPE_JSON:
-                return self::parseJson($str);
-            	break;
-            
-            case self::CONTENT_TYPE_XML:
-                return self::parseXml($str);
-            	break;
-
-            default:
-                return $str;
-            	break;
-        }
+        $this->setOpt(CURLOPT_USERAGENT, $useragent);
+        $this->setOpt(CURLOPT_FOLLOWLOCATION, true);
+        $this->setOpt(CURLOPT_COOKIEJAR, $cookiefile);
+        $this->setOpt(CURLOPT_COOKIEFILE, $cookiefile);
+        
+        return $this->post($url, $params);
     }
 }
