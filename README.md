@@ -14,7 +14,7 @@ The recommended way to install is through [Composer](http://composer.org).
 # Install Composer
 $ curl -sS https://getcomposer.org/installer | php
 
-# Add easypay-php as a dependency
+# Add curl as a dependency
 $ php composer.phar require masnathan/curl:dev-master
 ```
 
