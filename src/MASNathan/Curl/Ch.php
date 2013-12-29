@@ -146,7 +146,7 @@ class Ch
     {
         $curl = \curl_init();
 
-        if ($method == 'GET') {
+        if ($method == 'GET' && !empty($data) {
             $url .= '?' . \http_build_query($data);
         } elseif (!is_null($special_options)) {
         	\curl_setopt_array($curl, $special_options);
