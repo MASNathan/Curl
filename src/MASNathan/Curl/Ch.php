@@ -146,10 +146,12 @@ class Ch
     {
         $curl = \curl_init();
 
-        if ($method == 'GET' && !empty($data) {
-            $url .= '?' . \http_build_query($data);
+        if ($method == 'GET') {
+            if (!empty($data)) {
+                $url .= '?' . \http_build_query($data);
+            }
         } elseif (!is_null($special_options)) {
-        	\curl_setopt_array($curl, $special_options);
+            \curl_setopt_array($curl, $special_options);
             \curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
             \curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
         } else {
@@ -224,7 +226,7 @@ class Ch
             ));
 
         } else {
-        	$data = self::curl($method, $url, $params);
+            $data = self::curl($method, $url, $params);
         }
 
         $data = StringParser::parse($data, $data_type);
