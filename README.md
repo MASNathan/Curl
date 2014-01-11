@@ -80,4 +80,4 @@ Ch::get('http://somedomain.com', function(data) { var_dump($data); }, 'json');
 
 This library is under the MIT License, see the complete license [here](LICENSE)
 
-#Is your project using `MASNathan\Curl`? [Let me know](https://github.com/ReiDuKuduro/Curl/issues/new?title=New%20script%20using%20Curl&body=Name and Description of your script.)!
+###Is your project using `MASNathan\Curl`? [Let me know](https://github.com/ReiDuKuduro/Curl/issues/new?title=New%20script%20using%20Curl&body=Name and Description of your script.)!
